@@ -829,7 +829,7 @@ function HomePage() {
               </div>
             </FadeIn>
             <FadeIn delay={0.15}>
-              <img src="/images/daily.WEBP" alt="Children participating in daily activities" style={{ width:"100%", height:540, borderRadius:22, objectFit:"cover", display:"block" }}/>
+              <img src="/images/daily1.WEBP" alt="Children participating in daily activities" style={{ width:"100%", height:540, borderRadius:22, objectFit:"cover", display:"block" }}/>
             </FadeIn>
           </div>
         </div>
