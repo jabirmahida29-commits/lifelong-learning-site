@@ -1,13 +1,15 @@
+```jsx
 /*
-CHANGES SUMMARY:
-1. Google Maps embed: Added isValidMapUrl() guard — if GOOGLE_MAPS_EMBED_URL is empty or contains placeholder text, a clean fallback "View on Google Maps" button renders instead of a broken iframe.
-2. Header logo: Replaced bare clickable <img> with a semantic <button> wrapper. All visual appearance, hover effects, and behavior preserved. Keyboard accessible, no default button styling.
-3. Contact section alignment: Removed padding-top workaround on .contact-right. Changed .contact-two-col to align-items: center so the right column (image + map stack) is truly vertically centered against the full left column height on desktop. Mobile/tablet stack behavior unchanged.
-4. Footer logo: Removed loading="lazy" (below fold but low impact; removed per optional cleanup instruction).
+CHANGELOG:
+1. Added SITE_URL = "https://lifelonglearningcentre.com" constant. Replaced all window.location.origin usage in SeoHead with SITE_URL. Canonical URLs now always point to the production domain.
+2. Updated "Oshawa — 10 min away" note to "Oshawa — easy drive away" in DurhamRegionSection.
+3. Replaced GOOGLE_MAPS_EMBED_URL empty string with the real production embed URL. Updated MapOrFallback to render the real iframe using the exact structure specified (src, width, height, style, loading, allowFullScreen, referrerPolicy, title). The isValidMapUrl guard now correctly passes for this real URL, so the iframe renders automatically.
 */
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+
+const SITE_URL = "https://lifelonglearningcentre.com";
 
 const LOGO_PATH = "/logo.jpg";
 const FACEBOOK_URL = "https://www.facebook.com/share/17hs84vmpk/?mibextid=wwXIfr";
@@ -18,18 +20,8 @@ const PHONE = "tel:9052405433";
 const MAPS_URL = "https://maps.app.goo.gl/sqh5As62kySuvkSG7?g_st=ic";
 const BOOK_TOUR_URL = "https://api.leadconnectorhq.com/widget/form/7vUWN4jaEDQpyLiR3SHT?notrack=true";
 
-/*
-  GOOGLE MAPS EMBED URL:
-  To get your real embed URL:
-  1. Go to https://maps.google.com
-  2. Search for "1830 Rossland Rd E, Whitby, ON L1N 3P2"
-  3. Click Share → Embed a map → Copy HTML
-  4. Extract only the src="..." URL from that iframe
-  5. Paste it as the value below (replace the empty string)
-*/
-const GOOGLE_MAPS_EMBED_URL = "";
+const GOOGLE_MAPS_EMBED_URL = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d249.3636450214468!2d0!3d0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89d51d9c17e94553%3A0xdc4ee99a7872633f!2sLifelong%20Learning%20Centre%20Whitby!5e0!3m2!1sen!2sca!4v1775787145679!5m2!1sen!2sca";
 
-/* Returns true only when a real embed URL has been pasted in */
 function isValidMapUrl(url) {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
@@ -41,16 +33,19 @@ function isValidMapUrl(url) {
 
 const SEO_META = {
   "/": {
-    title: "Daycare in Whitby | Lifelong Learning Centre",
-    description: "Licensed daycare in Whitby serving Durham Region. Ages 18 months to 7 years. Book a tour today.",
+    title: "Lifelong Learning Centre | Daycare in Durham Region",
+    description: "Licensed daycare serving families across Durham Region, including Whitby, Oshawa, Ajax, and Pickering. Safe, nurturing care for children 18 months to 7 years.",
+    keywords: "daycare Durham Region, childcare Whitby, daycare Oshawa, daycare Ajax, daycare Pickering, licensed daycare Ontario, toddler preschool program Whitby",
   },
   "/about": {
-    title: "About Our Whitby Daycare | Lifelong Learning Centre",
-    description: "Learn about Lifelong Learning Centre, a locally owned licensed daycare in Whitby serving families across Durham Region.",
+    title: "About Lifelong Learning Centre | Whitby Daycare Serving Durham Region",
+    description: "Learn about Lifelong Learning Centre, a locally owned licensed daycare in Whitby serving families across Durham Region with nurturing early childhood programs.",
+    keywords: "about Lifelong Learning Centre, Whitby daycare, Durham Region childcare, family daycare Ontario, licensed childcare Whitby",
   },
   "/programs": {
-    title: "Childcare Programs in Whitby | Lifelong Learning Centre",
-    description: "Explore toddler, preschool, pre-kindergarten, and school-age childcare programs at Lifelong Learning Centre in Whitby.",
+    title: "Childcare Programs in Durham Region | Lifelong Learning Centre",
+    description: "Explore toddler, preschool, pre-kindergarten, and school-age childcare programs at Lifelong Learning Centre, serving families across Whitby and Durham Region.",
+    keywords: "childcare programs Durham Region, toddler program Whitby, preschool Oshawa Ajax Pickering, pre-kindergarten Durham, school age childcare Whitby",
   },
 };
 
@@ -105,18 +100,10 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
 .header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(253,251,248,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(224,123,57,0.1); transition: box-shadow var(--transition); }
 .header.scrolled { box-shadow: 0 2px 30px rgba(0,0,0,0.08); }
 .header-inner { max-width: 1200px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
-
-/* Semantic logo button */
-.header-logo-btn {
-  background: none; border: none; padding: 0; cursor: pointer;
-  display: flex; align-items: center; flex-shrink: 0;
-  border-radius: 6px;
-  transition: transform var(--transition), opacity var(--transition);
-}
+.header-logo-btn { background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; flex-shrink: 0; border-radius: 6px; transition: transform var(--transition), opacity var(--transition); }
 .header-logo-btn:hover { transform: scale(1.04); opacity: 0.88; }
 .header-logo-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 .header-logo { height: 50px; width: auto; object-fit: contain; display: block; border-radius: 6px; }
-
 .nav-links { display: flex; gap: 28px; align-items: center; list-style: none; }
 .nav-link-btn { background: none; border: none; padding: 0; color: var(--text2); font-weight: 500; font-size: 0.92rem; transition: color var(--transition); cursor: pointer; letter-spacing: 0.01em; position: relative; font-family: var(--body); }
 .nav-link-btn::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 2px; background: var(--gold); border-radius: 2px; transform: scaleX(0); transition: transform var(--transition); }
@@ -199,15 +186,21 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
 .goals-list { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
 .steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
 
-/* ── CONTACT TWO-COL
-   align-items: center vertically centers the right column (image + map)
-   against the full height of the left content block on desktop ── */
+/* ── CONTACT TWO-COL ── */
 .contact-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 52px; align-items: center; }
 .contact-right { display: flex; flex-direction: column; gap: 20px; }
 
-/* Map fallback block */
+/* ── MAP FALLBACK ── */
 .map-fallback { border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); width: 100%; background: var(--bg2); border: 1.5px solid rgba(224,123,57,0.12); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px 24px; text-align: center; }
 .map-fallback p { font-size: 0.88rem; color: var(--text3); }
+
+/* ── AREA GRID ── */
+.area-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+.area-card { background: white; border-radius: 18px; padding: 28px 20px 24px; text-align: center; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.04); transition: transform var(--transition), box-shadow var(--transition); }
+.area-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+.area-card-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+.area-card h3 { font-family: var(--heading); font-size: 1.05rem; margin-bottom: 6px; color: var(--text); }
+.area-card p { font-size: 0.84rem; color: var(--text2); line-height: 1.6; }
 
 /* ── FEAT CARD ── */
 .feat-card { background: white; border-radius: var(--radius); padding: 28px 26px 30px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.04); transition: transform var(--transition), box-shadow var(--transition); position: relative; overflow: hidden; }
@@ -314,7 +307,7 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
 .contact-link { color: var(--text2); text-decoration: none; transition: color var(--transition); }
 .contact-link:hover { color: var(--gold); }
 .contact-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
-.map-embed { border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); width: 100%; height: 220px; border: none; display: block; }
+.map-embed { border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); width: 100%; border: none; display: block; }
 
 /* ── SPACE CARD ── */
 .space-card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.04); transition: transform var(--transition), box-shadow var(--transition); }
@@ -359,12 +352,12 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
   .feat-grid { grid-template-columns: repeat(2,1fr); }
   .prog-grid { grid-template-columns: repeat(2,1fr); }
   .ready-grid { grid-template-columns: repeat(2,1fr); }
+  .area-grid { grid-template-columns: repeat(2,1fr); }
   .testi-grid { grid-template-columns: 1fr; max-width: 520px; margin-left: auto; margin-right: auto; }
   .team-grid { grid-template-columns: repeat(2,1fr); }
   .space-grid { grid-template-columns: repeat(2,1fr); }
   .two-col { grid-template-columns: 1fr; gap: 36px; }
   .about-grid { grid-template-columns: 1fr; gap: 36px; }
-  /* Stack contact on tablet, no special centering needed */
   .contact-two-col { grid-template-columns: 1fr; gap: 36px; align-items: start; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
   .steps-grid { grid-template-columns: 1fr; gap: 20px; max-width: 480px; margin: 0 auto; }
@@ -403,6 +396,7 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
   .feat-card { text-align: center; }
   .feat-card-icon { justify-content: center; }
   .prog-grid { grid-template-columns: 1fr; gap: 16px; }
+  .area-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
   .prog-card-full-header { justify-content: center; flex-wrap: wrap; gap: 8px; }
   .prog-card-simple-header { justify-content: center; flex-wrap: wrap; gap: 8px; }
   .prog-card-full-body h3 { text-align: center; }
@@ -431,7 +425,6 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
   .footer-grid > div:first-child p { max-width: 100%; text-align: center; }
   .footer-social { justify-content: center; }
   .section-title { font-size: clamp(1.6rem,6vw,2.1rem); }
-  .map-embed { height: 180px; }
   .map-fallback { min-height: 140px; }
   .approach-btns { flex-direction: column; align-items: center; width: 100%; }
   .approach-btns .btn { width: 100%; max-width: 320px; }
@@ -441,6 +434,7 @@ body { font-family: var(--body); color: var(--text); background: var(--bg); line
   .about-cta-btns .btn { width: 100%; max-width: 300px; }
   .social-links { justify-content: center; }
   .scarcity-badge { font-size: 0.74rem; }
+  .area-card { padding: 22px 14px 18px; }
 }
 `;
 
@@ -480,13 +474,14 @@ function MapOrFallback() {
   if (isValidMapUrl(GOOGLE_MAPS_EMBED_URL)) {
     return (
       <iframe
-        className="map-embed"
-        title="Lifelong Learning Centre location at 1830 Rossland Rd E, Whitby, Ontario"
         src={GOOGLE_MAPS_EMBED_URL}
+        width="100%"
+        height="400"
+        style={{ border: 0 }}
         loading="lazy"
         allowFullScreen
         referrerPolicy="no-referrer-when-downgrade"
-        aria-label="Google Map showing Lifelong Learning Centre location in Whitby"
+        title="Lifelong Learning Centre Whitby location"
       />
     );
   }
@@ -494,17 +489,9 @@ function MapOrFallback() {
     <div className="map-fallback" role="region" aria-label="Map location fallback">
       <SvgMapPin c="var(--gold)" s={28}/>
       <p>1830 Rossland Rd E, Whitby, ON L1N 3P2</p>
-      
-       <a
-  href={MAPS_URL}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="btn btn-outline"
-  style={{ fontSize:"0.88rem", padding:"10px 22px" }}
-  aria-label="View Lifelong Learning Centre on Google Maps"
->
-  View on Google Maps
-</a>
+      <a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize:"0.88rem", padding:"10px 22px" }} aria-label="View Lifelong Learning Centre on Google Maps">
+        View on Google Maps
+      </a>
     </div>
   );
 }
@@ -652,18 +639,122 @@ function WhatToExpectSection({ openForm }) {
   );
 }
 
+/* ─── DURHAM REGION SERVICE AREA SECTION ─── */
+function DurhamRegionSection({ openForm }) {
+  const areas = [
+    {
+      city: "Whitby",
+      note: "Our home base",
+      desc: "Conveniently located at 1830 Rossland Rd E — easy access from throughout Whitby and central Durham Region.",
+      icon: "📍",
+      color: "rgba(224,123,57,0.11)",
+      accent: "#E07B39",
+    },
+    {
+      city: "Oshawa",
+      note: "easy drive away", /* Updated from "10 min away" */
+      desc: "Many of our families commute from Oshawa and appreciate the short drive to a truly nurturing environment.",
+      icon: "🚗",
+      color: "rgba(91,159,212,0.11)",
+      accent: "#5B9FD4",
+    },
+    {
+      city: "Ajax",
+      note: "Just next door",
+      desc: "Ajax families enjoy the convenience of Whitby's location right on the Durham Region border.",
+      icon: "🌿",
+      color: "rgba(109,190,123,0.11)",
+      accent: "#6DBE7B",
+    },
+    {
+      city: "Pickering",
+      note: "Welcome too",
+      desc: "Families from Pickering find us an easy and worthwhile commute for quality licensed care.",
+      icon: "⭐",
+      color: "rgba(155,127,212,0.11)",
+      accent: "#9B7FD4",
+    },
+  ];
+
+  return (
+    <section className="section" style={{ background:"var(--bg2)" }}>
+      <DSun size={90} color="rgba(245,200,66,0.09)" style={{ top:"5%", right:"3%" }} anim="float-b"/>
+      <DDots color="rgba(91,159,212,0.07)" style={{ bottom:"8%", left:"3%" }} anim="float-a"/>
+      <DZigzag w={100} color="rgba(224,123,57,0.07)" style={{ top:"12%", left:"3%" }} anim="float-c"/>
+      <div className="section-inner">
+        <FadeIn>
+          <div className="sec-hdr center">
+            <div className="section-label">Service Area</div>
+            <h2 className="section-title">Serving Families Across Durham Region</h2>
+            <p className="section-sub">
+              Based in Whitby, we proudly welcome families from across Durham Region — including Oshawa, Ajax, and Pickering. Our centre is centrally located and easy to reach from throughout the region.
+            </p>
+          </div>
+        </FadeIn>
+        <div className="area-grid">
+          {areas.map((a, i) => (
+            <FadeIn key={i} delay={i * 0.09}>
+              <div className="area-card">
+                <div className="area-card-icon" style={{ background: a.color }}>
+                  <span style={{ fontSize:"1.4rem" }}>{a.icon}</span>
+                </div>
+                <h3>{a.city}</h3>
+                <div style={{ fontSize:"0.72rem", fontWeight:700, color:a.accent, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:8 }}>{a.note}</div>
+                <p>{a.desc}</p>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
+        <FadeIn delay={0.4}>
+          <p style={{ textAlign:"center", marginTop:32, fontSize:"0.88rem", color:"var(--text3)" }}>
+            Wherever you are in Durham Region — we'd love to meet your family.{" "}
+            <button type="button" onClick={openForm} style={{ background:"none", border:"none", color:"var(--gold)", fontWeight:700, cursor:"pointer", fontSize:"0.88rem", fontFamily:"var(--body)", textDecoration:"underline", padding:0 }}>
+              Book a free tour →
+            </button>
+          </p>
+        </FadeIn>
+      </div>
+    </section>
+  );
+}
+
+/* ─── PAGE-SPECIFIC SEO with hardcoded SITE_URL canonical ─── */
 function SeoHead() {
   const { pathname } = useLocation();
   useEffect(() => {
     const meta = SEO_META[pathname] || SEO_META["/"];
+
     document.title = meta.title;
-    let el = document.querySelector('meta[name="description"]');
-    if (!el) {
-      el = document.createElement("meta");
-      el.setAttribute("name", "description");
-      document.head.appendChild(el);
+
+    let desc = document.querySelector('meta[name="description"]');
+    if (!desc) {
+      desc = document.createElement("meta");
+      desc.setAttribute("name", "description");
+      document.head.appendChild(desc);
     }
-    el.setAttribute("content", meta.description);
+    desc.setAttribute("content", meta.description);
+
+    let kw = document.querySelector('meta[name="keywords"]');
+    if (!kw) {
+      kw = document.createElement("meta");
+      kw.setAttribute("name", "keywords");
+      document.head.appendChild(kw);
+    }
+    kw.setAttribute("content", meta.keywords);
+
+    /* Canonical uses hardcoded SITE_URL — never window.location.origin */
+    let canon = document.querySelector('link[rel="canonical"]');
+    if (!canon) {
+      canon = document.createElement("link");
+      canon.setAttribute("rel", "canonical");
+      document.head.appendChild(canon);
+    }
+    const canonicalPath = pathname === "/" ? "" : pathname;
+    canon.setAttribute("href", `${SITE_URL}${canonicalPath}`);
+
+    return () => {
+      if (canon && canon.parentNode) canon.parentNode.removeChild(canon);
+    };
   }, [pathname]);
   return null;
 }
@@ -707,30 +798,13 @@ function Header() {
   return (
     <header className={`header${scrolled ? " scrolled" : ""}`}>
       <div className="header-inner">
-        {/* Semantic button wrapping logo — keyboard accessible, no default button styling */}
-        <button
-          type="button"
-          className="header-logo-btn"
-          onClick={() => go("/")}
-          aria-label="Lifelong Learning Centre — go to homepage"
-        >
-          <img
-            src={LOGO_PATH}
-            alt="Lifelong Learning Centre logo"
-            className="header-logo"
-          />
+        <button type="button" className="header-logo-btn" onClick={() => go("/")} aria-label="Lifelong Learning Centre — go to homepage">
+          <img src={LOGO_PATH} alt="Lifelong Learning Centre logo" className="header-logo"/>
         </button>
-
         <ul className="nav-links">
-          <li>
-            <button type="button" className="nav-link-btn" onClick={() => go("/")} style={{ color: page==="/" ? "var(--gold)" : undefined }}>Home</button>
-          </li>
-          <li>
-            <button type="button" className="nav-link-btn" onClick={() => go("/about")} style={{ color: page==="/about" ? "var(--gold)" : undefined }}>About</button>
-          </li>
-          <li>
-            <button type="button" className="nav-link-btn" onClick={() => go("/programs")} style={{ color: page==="/programs" ? "var(--gold)" : undefined }}>Programs</button>
-          </li>
+          <li><button type="button" className="nav-link-btn" onClick={() => go("/")} style={{ color: page==="/" ? "var(--gold)" : undefined }}>Home</button></li>
+          <li><button type="button" className="nav-link-btn" onClick={() => go("/about")} style={{ color: page==="/about" ? "var(--gold)" : undefined }}>About</button></li>
+          <li><button type="button" className="nav-link-btn" onClick={() => go("/programs")} style={{ color: page==="/programs" ? "var(--gold)" : undefined }}>Programs</button></li>
           <li><button type="button" className="nav-cta" onClick={openForm}>Register Now</button></li>
         </ul>
         <button type="button" className={`hamburger${menuOpen ? " open" : ""}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation menu">
@@ -768,10 +842,10 @@ function HomePage() {
         <div className="section-inner" style={{ position:"relative", zIndex:1 }}>
           <div className="hero-grid">
             <div className="hero-content">
-              <div className="hero-eyebrow">✦ Serving Families Across Durham Region · Est. 2009</div>
+              <div className="hero-eyebrow">✦ Whitby · Oshawa · Ajax · Pickering · Est. 2009</div>
               <h1>A Warm Start for<br/><em>Curious Minds</em></h1>
-              <p className="hero-desc">Lifelong Learning Centre is a locally owned, family-run childcare serving families across Durham Region. Our certified educators help children build confidence, curiosity, and a genuine love of learning.</p>
-              <p className="hero-sub">Licensed by the Ministry of Education · Ages 18 months – 7 years · Located in Whitby, Ontario</p>
+              <p className="hero-desc">Lifelong Learning Centre is a locally owned, family-run daycare based in Whitby and serving families across Durham Region. Our certified educators help children build confidence, curiosity, and a genuine love of learning.</p>
+              <p className="hero-sub">Licensed by the Ministry of Education · Ages 18 months – 7 years · Serving Whitby, Oshawa, Ajax & Pickering</p>
               <p className="hero-urgency">Limited spots available · Waitlist forming for Fall 2026</p>
               <div className="hero-btns">
                 <button type="button" className="btn btn-primary" onClick={openForm}>Book a Tour</button>
@@ -785,8 +859,7 @@ function HomePage() {
             </div>
             <div>
               <div className="hero-img-wrap">
-                {/* No loading="lazy" — above the fold */}
-                <img src="/images/hero.JPG" alt="Children engaged in learning activities at Lifelong Learning Centre daycare in Whitby" style={{ width:"100%", height:460, objectFit:"cover", display:"block" }}/>
+                <img src="/images/hero.JPG" alt="Children engaged in learning activities at Lifelong Learning Centre daycare in Whitby, serving Durham Region" style={{ width:"100%", height:460, objectFit:"cover", display:"block" }}/>
               </div>
             </div>
           </div>
@@ -803,7 +876,7 @@ function HomePage() {
             <div className="sec-hdr center">
               <div className="section-label">Why Families Choose Us</div>
               <h2 className="section-title">Childcare Families Trust</h2>
-              <p className="section-sub">Families across Durham Region have trusted us with their children. Here's what makes us different.</p>
+              <p className="section-sub">Families across Whitby, Oshawa, Ajax, and Pickering have trusted us with their children. Here's what makes us different.</p>
             </div>
           </FadeIn>
           <div className="feat-grid">
@@ -835,7 +908,7 @@ function HomePage() {
         <div className="section-inner">
           <div className="two-col">
             <FadeIn>
-              <img src="/images/learning.JPG" alt="Certified educator guiding children through a structured learning activity at Lifelong Learning Centre" loading="lazy" style={{ width:"100%", height:400, borderRadius:22, objectFit:"cover", display:"block" }}/>
+              <img src="/images/learning.JPG" alt="Certified educator guiding children through a structured learning activity at Lifelong Learning Centre in Whitby" loading="lazy" style={{ width:"100%", height:400, borderRadius:22, objectFit:"cover", display:"block" }}/>
             </FadeIn>
             <FadeIn delay={0.15}>
               <div>
@@ -864,7 +937,7 @@ function HomePage() {
             <div className="sec-hdr center">
               <div className="section-label">Our Programs</div>
               <h2 className="section-title">Every Stage, Every Child</h2>
-              <p className="section-sub">Four age-tailored programs for children 18 months to 7 years, each designed to meet your child exactly where they are.</p>
+              <p className="section-sub">Four age-tailored programs for children 18 months to 7 years — serving families in Whitby and throughout Durham Region.</p>
             </div>
           </FadeIn>
           <FadeIn>
@@ -1026,22 +1099,19 @@ function HomePage() {
         </div>
       </section>
 
-      {/* CONTACT
-          contact-two-col uses align-items: center (desktop only) so the right column
-          (image + map stacked in .contact-right) is vertically centered against
-          the full height of the left text block. Tablet/mobile override to align-items: start. */}
+      <DurhamRegionSection openForm={openForm}/>
+
       <section className="section" style={{ background:"var(--bg3)" }}>
         <DCloud size={170} color="rgba(91,159,212,0.07)" style={{ top:"3%", right:"1%" }} anim="float-b"/>
         <DCrayon size={20} h={72} color="rgba(109,184,122,0.11)" style={{ bottom:"5%", left:"3%", transform:"rotate(-16deg)" }} anim="float-c"/>
         <DZigzag w={95} color="rgba(224,123,57,0.08)" style={{ top:"20%", left:"3%" }} anim="float-a"/>
         <div className="section-inner">
           <div className="contact-two-col">
-            {/* LEFT: full text block */}
             <FadeIn>
               <div>
                 <div className="section-label">Visit & Contact</div>
-                <h2 className="section-title">Serving Durham Region from Whitby</h2>
-                <p className="section-sub" style={{ marginBottom:24 }}>Established in 2009, we've been a trusted childcare choice for families across Durham Region. Our centre is easily accessible from throughout the region.</p>
+                <h2 className="section-title">Conveniently Located for Families Across Durham Region</h2>
+                <p className="section-sub" style={{ marginBottom:24 }}>Our centre at 1830 Rossland Rd E in Whitby is easily accessible for families throughout Durham Region — including Oshawa, Ajax, and Pickering. Established in 2009, we've been a trusted childcare partner for the community ever since.</p>
                 <div className="location-rows">
                   {[
                     { icon:<SvgMapPin c="var(--gold)"/>, content:<a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className="contact-link" aria-label="View our location on Google Maps">1830 Rossland Rd E, Whitby, ON L1N 3P2</a> },
@@ -1062,13 +1132,11 @@ function HomePage() {
                 </div>
               </div>
             </FadeIn>
-
-            {/* RIGHT: image + map/fallback stacked — centered vertically by parent align-items: center */}
             <FadeIn delay={0.15}>
               <div className="contact-right">
                 <img
                   src="/images/centre.jpeg"
-                  alt="Exterior of Lifelong Learning Centre childcare at 1830 Rossland Rd E in Whitby, Ontario"
+                  alt="Exterior of Lifelong Learning Centre childcare at 1830 Rossland Rd E in Whitby, Ontario — serving Durham Region"
                   loading="lazy"
                   style={{ width:"100%", height:220, borderRadius:18, objectFit:"cover", display:"block", boxShadow:"var(--shadow)" }}
                 />
@@ -1088,7 +1156,7 @@ function HomePage() {
               <DCloud size={150} color="rgba(255,255,255,0.05)" style={{ top:-8, right:"14%" }}/>
               <div style={{ position:"relative", zIndex:1 }}>
                 <h2>Spots Are Limited — Don't Wait</h2>
-                <p>Book a tour today and see why families across Durham Region trust Lifelong Learning Centre with their most important people.</p>
+                <p>Book a tour today and see why families across Whitby, Oshawa, Ajax, and Pickering trust Lifelong Learning Centre with their most important people.</p>
                 <div className="cta-btns">
                   <button type="button" className="btn btn-white" onClick={openForm}>Register Now</button>
                   <a href={PHONE} className="btn btn-ghost" style={{ textDecoration:"none" }} aria-label="Call Lifelong Learning Centre">Call Us</a>
@@ -1123,7 +1191,7 @@ function AboutPage() {
                 Built on Community, Driven by <span style={{ color:"var(--gold)" }}>Care</span>
               </h1>
               <p style={{ fontSize:"1.03rem", color:"var(--text2)", maxWidth:520, lineHeight:1.84 }}>
-                We're not a chain. We're a locally owned, family-run childcare centre — established in 2009, proudly serving families across Durham Region from our centre in Whitby.
+                We're not a chain. We're a locally owned, family-run childcare centre — established in 2009, based in Whitby and proudly serving families across Durham Region.
               </p>
             </div>
           </FadeIn>
@@ -1137,14 +1205,14 @@ function AboutPage() {
         <div className="section-inner">
           <div className="about-grid">
             <FadeIn>
-              <img src="/images/warm.jpg" alt="Warm connection between an educator and child at Lifelong Learning Centre" loading="lazy" style={{ width:"100%", height:400, borderRadius:22, objectFit:"cover", display:"block" }}/>
+              <img src="/images/warm.jpg" alt="Warm connection between an educator and child at Lifelong Learning Centre in Whitby" loading="lazy" style={{ width:"100%", height:400, borderRadius:22, objectFit:"cover", display:"block" }}/>
             </FadeIn>
             <FadeIn delay={0.15}>
               <div>
                 <div className="section-label">Established 2009</div>
                 <h2 className="section-title">Community Roots. A Vision for Children.</h2>
                 <p className="section-sub" style={{ marginBottom:14 }}>Lifelong Learning Centre was founded in 2009 with one simple belief: every child deserves a warm, nurturing place to grow. Our family's roots in Durham Region go back to 1989 — this community has been home for a long time.</p>
-                <p className="section-sub" style={{ marginBottom:24 }}>From our centre in Whitby, we serve families across Durham Region who want more than just childcare — a place where children feel safe, parents feel confident, and learning happens naturally every day.</p>
+                <p className="section-sub" style={{ marginBottom:24 }}>From our centre in Whitby, we serve families across Durham Region — including Oshawa, Ajax, and Pickering — who want more than just childcare: a place where children feel safe, parents feel confident, and learning happens naturally every day.</p>
                 <button type="button" className="btn btn-primary" onClick={goPrograms}>See Our Programs →</button>
               </div>
             </FadeIn>
@@ -1193,7 +1261,7 @@ function AboutPage() {
           </FadeIn>
           <div className="space-grid">
             {[
-              { label:"Bright Classrooms", desc:"Natural light, organized learning stations, age-appropriate materials.", image:"/images/care.JPG", alt:"Bright, organized classroom at Lifelong Learning Centre" },
+              { label:"Bright Classrooms", desc:"Natural light, organized learning stations, age-appropriate materials.", image:"/images/care.JPG", alt:"Bright, organized classroom at Lifelong Learning Centre in Whitby" },
               { label:"Outdoor Play Areas", desc:"Safe, fully enclosed spaces for running, climbing, and exploring.", image:"/images/outdoor1.JPG", alt:"Safe outdoor play area at Lifelong Learning Centre in Whitby" },
               { label:"Creative Spaces", desc:"Dedicated areas for art, music, dramatic play, and hands-on projects.", image:"/images/daily2.JPG", alt:"Creative arts space at Lifelong Learning Centre" },
             ].map((c, i) => (
@@ -1247,7 +1315,7 @@ function AboutPage() {
               <DStar size={76} color="rgba(255,255,255,0.07)" style={{ top:-14, left:"4%" }}/>
               <DHeart size={48} color="rgba(255,255,255,0.06)" style={{ bottom:-8, right:"6%" }}/>
               <h2>Come See Our Centre for Yourself</h2>
-              <p>We'd love to show you around, introduce our team, and answer every question you have.</p>
+              <p>We'd love to welcome your family — whether you're in Whitby, Oshawa, Ajax, or Pickering. Come see what we're all about.</p>
               <div className="cta-btns about-cta-btns">
                 <button type="button" className="btn btn-white" onClick={openForm}>Register Now</button>
                 <a href={PHONE} className="btn btn-ghost" style={{ textDecoration:"none" }} aria-label="Call Lifelong Learning Centre">Call Us</a>
@@ -1280,7 +1348,7 @@ function ProgramsPage() {
                 Tailored for Every <span style={{ color:"var(--gold)" }}>Stage of Growth</span>
               </h1>
               <p style={{ fontSize:"1.03rem", color:"var(--text2)", maxWidth:520, lineHeight:1.84 }}>
-                Four age-specific programs for children 18 months to 7 years — each designed to meet your child's natural developmental stage with confidence-building learning and genuine care.
+                Four age-specific programs for children 18 months to 7 years — serving families in Whitby, Oshawa, Ajax, Pickering, and throughout Durham Region with confidence-building learning and genuine care.
               </p>
             </div>
           </FadeIn>
@@ -1357,7 +1425,7 @@ function ProgramsPage() {
               <DCloud size={148} color="rgba(255,255,255,0.05)" style={{ top:-6, right:"5%" }}/>
               <DHeart size={48} color="rgba(255,255,255,0.06)" style={{ bottom:-8, left:"4%" }}/>
               <h2>Find the Right Program for Your Child</h2>
-              <p>Book a tour to visit our classrooms, meet our educators, and see which program is the perfect fit.</p>
+              <p>Book a tour to visit our classrooms, meet our educators, and see which program is the perfect fit — wherever you are in Durham Region.</p>
               <div className="cta-btns">
                 <button type="button" className="btn btn-white" onClick={openForm}>Register Now</button>
                 <a href={PHONE} className="btn btn-ghost" style={{ textDecoration:"none" }} aria-label="Call Lifelong Learning Centre">Call Us</a>
@@ -1380,10 +1448,9 @@ function Footer() {
       <div className="footer-inner">
         <div className="footer-grid">
           <div>
-            {/* loading="lazy" removed per optional cleanup */}
-            <img src={LOGO_PATH} alt="Lifelong Learning Centre — licensed daycare in Whitby, Ontario" className="footer-logo"/>
+            <img src={LOGO_PATH} alt="Lifelong Learning Centre — licensed daycare in Whitby, serving Durham Region" className="footer-logo"/>
             <p style={{ fontSize:"0.86rem", lineHeight:1.78, maxWidth:260, marginTop:10, color:"rgba(255,255,255,0.65)" }}>
-              A locally owned and operated, licensed childcare centre established in 2009. Serving families across Durham Region from our centre in Whitby, Ontario — with family roots in this community since 1989.
+              A locally owned, licensed childcare centre established in 2009. Based in Whitby and serving families across Durham Region — including Oshawa, Ajax, and Pickering — with family roots in this community since 1989.
             </p>
             <div className="footer-social social-links" style={{ justifyContent:"flex-start" }}>
               <a className="social-btn" href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" style={{ color:"#90B8F0", borderColor:"rgba(255,255,255,0.25)" }} aria-label="Facebook"><SvgFb/> Facebook</a>
@@ -1420,7 +1487,7 @@ function Footer() {
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} Lifelong Learning Centre. All rights reserved.</span>
-          <span>Est. 2009 · Whitby, Ontario · Licensed childcare provider serving Durham Region</span>
+          <span>Est. 2009 · Whitby, ON · Licensed daycare serving Whitby, Oshawa, Ajax & Pickering</span>
         </div>
       </div>
     </footer>
