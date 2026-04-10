@@ -1,11 +1,3 @@
-```jsx
-/*
-CHANGELOG:
-1. Added SITE_URL = "https://lifelonglearningcentre.com" constant. Replaced all window.location.origin usage in SeoHead with SITE_URL. Canonical URLs now always point to the production domain.
-2. Updated "Oshawa — 10 min away" note to "Oshawa — easy drive away" in DurhamRegionSection.
-3. Replaced GOOGLE_MAPS_EMBED_URL empty string with the real production embed URL. Updated MapOrFallback to render the real iframe using the exact structure specified (src, width, height, style, loading, allowFullScreen, referrerPolicy, title). The isValidMapUrl guard now correctly passes for this real URL, so the iframe renders automatically.
-*/
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 
@@ -50,8 +42,6 @@ const SEO_META = {
 };
 
 const styles = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap');
-
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -652,7 +642,7 @@ function DurhamRegionSection({ openForm }) {
     },
     {
       city: "Oshawa",
-      note: "easy drive away", /* Updated from "10 min away" */
+      note: "easy drive away",
       desc: "Many of our families commute from Oshawa and appreciate the short drive to a truly nurturing environment.",
       icon: "🚗",
       color: "rgba(91,159,212,0.11)",
@@ -742,7 +732,6 @@ function SeoHead() {
     }
     kw.setAttribute("content", meta.keywords);
 
-    /* Canonical uses hardcoded SITE_URL — never window.location.origin */
     let canon = document.querySelector('link[rel="canonical"]');
     if (!canon) {
       canon = document.createElement("link");
