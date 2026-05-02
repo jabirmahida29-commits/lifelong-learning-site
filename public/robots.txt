@@ -1,0 +1,12 @@
+# robots.txt for Lifelong Learning Centre
+
+# https://www.lifelonglearningcentre.com
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Block known staging / mirror host from being crawled if hit via this file
+# (real protection lives in DNS / hosting; see <meta name="robots"> guard in index.html)
+
+Sitemap: https://www.lifelonglearningcentre.com/sitemap.xml
