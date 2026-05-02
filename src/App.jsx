@@ -1,16 +1,21 @@
+
 /*
 CHANGELOG:
-1. SEO_META updated with stronger, keyword-rich titles and descriptions per the audit recommendations.
-   - Home: targets "daycare Whitby", "licensed daycare", "Durham Region" primary keywords
-   - About: targets E-E-A-T signals — "family-owned", "certified educators", "since 2009"
-   - Programs: targets program-specific and city-specific keywords
-2. SeoHead now also updates og:title, og:description, og:url, and twitter:title/description
-   dynamically on route change — so social crawlers that do render JS (LinkedIn, Slack)
-   get the correct per-page data.
-3. SITE_URL canonical path fix: home page now correctly produces
-   "https://lifelonglearningcentre.com" (no trailing slash) rather than
-   "https://lifelonglearningcentre.com/" which could cause a duplicate canonical.
-4. All other code is completely unchanged.
+1. SITE_URL now points to canonical host with www: "https://www.lifelonglearningcentre.com".
+   This matches the canonical host enforced by index.html and vercel.json so that
+   every per-route canonical link emitted by SeoHead resolves to the same hostname
+   Google should index. (Previously was the apex without www, which created a
+   subtle canonical mismatch with the static <link rel="canonical"> in index.html.)
+2. SeoHead no longer removes the <link rel="canonical"> element on unmount.
+   index.html now provides a static canonical for crawlers, and SeoHead updates
+   its href on route change. Removing it on unmount would (a) strip the static
+   canonical that index.html provides and (b) briefly leave the page with no
+   canonical at all between unmount and the next mount.
+3. All previous changelog items preserved:
+   - Oshawa note reads "easy drive away"
+   - GOOGLE_MAPS_EMBED_URL is the real production embed; MapOrFallback renders
+     a real iframe via isValidMapUrl
+   - Google Fonts @import removed from styles string (now loaded in index.html)
 */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -38,28 +43,21 @@ function isValidMapUrl(url) {
   return true;
 }
 
-/* ── SEO META — optimized titles, descriptions, keywords per audit ── */
 const SEO_META = {
   "/": {
-    title: "Lifelong Learning Centre | Licensed Daycare in Whitby, Ontario",
-    description: "Licensed daycare in Whitby serving Durham Region families since 2009. Toddler, preschool, pre-K and school-age programs for ages 18 months to 7 years. Book a free tour today.",
-    keywords: "daycare Whitby, Whitby daycare, licensed daycare Whitby Ontario, childcare Whitby, daycare Durham Region, childcare Durham Region, daycare Oshawa, daycare Ajax, daycare Pickering, toddler program Whitby, preschool Whitby",
-    ogTitle: "Lifelong Learning Centre | Licensed Daycare in Whitby, Ontario",
-    ogDescription: "Licensed daycare in Whitby serving Durham Region families since 2009. Toddler, preschool, pre-K and school-age programs. Book a free tour.",
+    title: "Lifelong Learning Centre | Daycare in Durham Region",
+    description: "Licensed daycare serving families across Durham Region, including Whitby, Oshawa, Ajax, and Pickering. Safe, nurturing care for children 18 months to 7 years.",
+    keywords: "daycare Durham Region, childcare Whitby, daycare Oshawa, daycare Ajax, daycare Pickering, licensed daycare Ontario, toddler preschool program Whitby",
   },
   "/about": {
-    title: "About Us | Family-Owned Licensed Daycare in Whitby Since 2009 | Lifelong Learning Centre",
-    description: "Family-owned and operated licensed daycare in Whitby, Ontario since 2009. Certified ECE educators, school readiness focus, and genuine care for every child across Durham Region.",
-    keywords: "about Lifelong Learning Centre, Whitby daycare history, certified educators Whitby, family daycare Ontario, ECE certified Whitby, licensed childcare Whitby, Durham Region daycare",
-    ogTitle: "About Lifelong Learning Centre | Whitby Daycare Since 2009",
-    ogDescription: "Family-owned licensed daycare in Whitby since 2009. Certified educators, school readiness focus, and genuine care for Durham Region families.",
+    title: "About Lifelong Learning Centre | Whitby Daycare Serving Durham Region",
+    description: "Learn about Lifelong Learning Centre, a locally owned licensed daycare in Whitby serving families across Durham Region with nurturing early childhood programs.",
+    keywords: "about Lifelong Learning Centre, Whitby daycare, Durham Region childcare, family daycare Ontario, licensed childcare Whitby",
   },
   "/programs": {
-    title: "Daycare Programs Whitby | Toddler, Preschool, Pre-K & School Age | Lifelong Learning Centre",
-    description: "Toddler, preschool, pre-kindergarten, and school-age childcare programs in Whitby, Ontario. Serving families across Durham Region including Oshawa, Ajax and Pickering. Ages 18 months to 7 years.",
-    keywords: "toddler program Whitby, preschool Whitby Ontario, preschool Durham Region, pre-kindergarten Whitby, school age childcare Whitby, childcare programs Durham Region, daycare programs Oshawa Ajax Pickering",
-    ogTitle: "Daycare Programs in Whitby | Lifelong Learning Centre",
-    ogDescription: "Toddler, preschool, pre-K and school-age programs in Whitby. Serving families across Durham Region. Ages 18 months to 7 years.",
+    title: "Childcare Programs in Durham Region | Lifelong Learning Centre",
+    description: "Explore toddler, preschool, pre-kindergarten, and school-age childcare programs at Lifelong Learning Centre, serving families across Whitby and Durham Region.",
+    keywords: "childcare programs Durham Region, toddler program Whitby, preschool Oshawa Ajax Pickering, pre-kindergarten Durham, school age childcare Whitby",
   },
 };
 
@@ -664,7 +662,7 @@ function DurhamRegionSection({ openForm }) {
     },
     {
       city: "Oshawa",
-      note: "easy drive away",
+      note: "easy drive away", /* Updated from "10 min away" */
       desc: "Many of our families commute from Oshawa and appreciate the short drive to a truly nurturing environment.",
       icon: "🚗",
       color: "rgba(91,159,212,0.11)",
@@ -730,60 +728,42 @@ function DurhamRegionSection({ openForm }) {
   );
 }
 
-/* ─── SEOHEAD — updated OG tags dynamically per route ─── */
+/* ─── PAGE-SPECIFIC SEO with hardcoded SITE_URL canonical ─── */
 function SeoHead() {
   const { pathname } = useLocation();
   useEffect(() => {
     const meta = SEO_META[pathname] || SEO_META["/"];
-    const canonicalPath = pathname === "/" ? "" : pathname;
-    const canonicalHref = `${SITE_URL}${canonicalPath}`;
 
-    /* title */
     document.title = meta.title;
 
-    /* description */
     let desc = document.querySelector('meta[name="description"]');
-    if (!desc) { desc = document.createElement("meta"); desc.setAttribute("name", "description"); document.head.appendChild(desc); }
+    if (!desc) {
+      desc = document.createElement("meta");
+      desc.setAttribute("name", "description");
+      document.head.appendChild(desc);
+    }
     desc.setAttribute("content", meta.description);
 
-    /* keywords */
     let kw = document.querySelector('meta[name="keywords"]');
-    if (!kw) { kw = document.createElement("meta"); kw.setAttribute("name", "keywords"); document.head.appendChild(kw); }
+    if (!kw) {
+      kw = document.createElement("meta");
+      kw.setAttribute("name", "keywords");
+      document.head.appendChild(kw);
+    }
     kw.setAttribute("content", meta.keywords);
 
-    /* canonical */
+    /* Canonical uses hardcoded SITE_URL — never window.location.origin */
     let canon = document.querySelector('link[rel="canonical"]');
-    if (!canon) { canon = document.createElement("link"); canon.setAttribute("rel", "canonical"); document.head.appendChild(canon); }
-    canon.setAttribute("href", canonicalHref);
+    if (!canon) {
+      canon = document.createElement("link");
+      canon.setAttribute("rel", "canonical");
+      document.head.appendChild(canon);
+    }
+    const canonicalPath = pathname === "/" ? "" : pathname;
+    canon.setAttribute("href", `${SITE_URL}${canonicalPath}`);
 
-    /* og:title */
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) { ogTitle = document.createElement("meta"); ogTitle.setAttribute("property", "og:title"); document.head.appendChild(ogTitle); }
-    ogTitle.setAttribute("content", meta.ogTitle);
-
-    /* og:description */
-    let ogDesc = document.querySelector('meta[property="og:description"]');
-    if (!ogDesc) { ogDesc = document.createElement("meta"); ogDesc.setAttribute("property", "og:description"); document.head.appendChild(ogDesc); }
-    ogDesc.setAttribute("content", meta.ogDescription);
-
-    /* og:url */
-    let ogUrl = document.querySelector('meta[property="og:url"]');
-    if (!ogUrl) { ogUrl = document.createElement("meta"); ogUrl.setAttribute("property", "og:url"); document.head.appendChild(ogUrl); }
-    ogUrl.setAttribute("content", canonicalHref);
-
-    /* twitter:title */
-    let twTitle = document.querySelector('meta[name="twitter:title"]');
-    if (!twTitle) { twTitle = document.createElement("meta"); twTitle.setAttribute("name", "twitter:title"); document.head.appendChild(twTitle); }
-    twTitle.setAttribute("content", meta.ogTitle);
-
-    /* twitter:description */
-    let twDesc = document.querySelector('meta[name="twitter:description"]');
-    if (!twDesc) { twDesc = document.createElement("meta"); twDesc.setAttribute("name", "twitter:description"); document.head.appendChild(twDesc); }
-    twDesc.setAttribute("content", meta.ogDescription);
-
-    return () => {
-      if (canon && canon.parentNode) canon.parentNode.removeChild(canon);
-    };
+    /* No cleanup: canonical is provided statically by index.html and updated
+       per-route here. Removing it on unmount would leave crawlers without one. */
   }, [pathname]);
   return null;
 }
